@@ -1,0 +1,417 @@
+Archlinux系统安装与配置
+
+安装脚本下载：
+git clone https://github.com/d27sa/scripts.git
+
+# 有脚本的情况下，只需要执行以下>开头的部分。
+
+> 启动时按F2修改BIOS设置：
+> Change the SATA Mode from the default "RAID" to "AHCI".
+> Change Fastboot to "Thorough" in "POST Behaviour"
+> 关闭Secure Boot
+
+
+
+> 下载安装文件(xxx.iso)和相应签名(xxx.iso.sig)，在现有arch系统上用以下命令验证：
+> pacman-key -v archlinux-version-x86_64.iso.sig
+
+
+
+把安装文件写入U盘：
+在windows上用win32diskimager
+在linux上用以下命令：
+dd bs=4M if=path/to/archlinux.iso of=/dev/sdx status=progress oflag=sync
+> ./write-usb.sh if of
+
+恢复U盘：
+sudo wipefs --all /dev/sda
+sudo mkfs.fat -F 32 /dev/sda
+
+
+插入U盘，重启电脑，按F12，从U盘启动
+
+
+
+> 用以下命令验证是否为EFI方式启动：
+> ls /sys/firmware/efi/efivars
+
+
+
+联网：
+> ./conwifi.sh wlp2s0 ssid password
+
+用以下命令列出interface：
+ip link
+启动interface：
+ip link set wlp2s0 up
+使用wpa_supplicant联网：
+wpa_passphrase SSID password > /etc/wpa_supplicant/wifi.conf
+wpa_supplicant -B -i wlp2s0 -c /etc/wpa_supplicant/wifi.conf
+dhcpcd wlp2s0
+此时应该成功联网，可以用ping命令确认
+
+
+
+用以下命令更新系统时钟：
+> timedatectl set-ntp true
+检查状态：
+> timedatectl status
+
+
+> 硬盘分区：
+> 用以下命令查看所有设备及分区：
+> fdisk -l
+> 用以下命令进入fdisk程序，对指定设备进行分区：
+> fdisk /dev/nvme0n1
+> 需要分出一个512MiB的EFI system partition(type=1)，剩下的给Linux x86-64 root (/)分区（type编号24）。
+
+
+
+> 格式化磁盘：
+> 用以下命令格式化ESP：
+> mkfs.fat -F 32 /dev/nvme0n1px
+> 用以下命令格式化root分区：
+> mkfs.ext4 /dev/nvme0n1px
+
+
+挂载分区：
+首先挂载root到/mnt：
+> mount /dev/nvme0n1px /mnt
+创建/mnt/boot文件夹并将ESP挂载到此处：
+> mkdir /mnt/boot
+> mount /dev/nvme0n1px /mnt/boot
+
+
+> 选择镜像：
+> 编辑镜像列表文件：
+> vim /etc/pacman.d/mirrorlist
+> 把地理位置近的移动到最上面。
+> 可以到这个网站https://www.archlinux.jp/mirrors/status/ 找到其他更好的镜像加进去
+
+
+
+> 删除/mnt/boot目录和子目录内与grub和linux有关的全部内容
+
+
+
+安装软件包：
+> ./pkg-install.sh
+pacstrap /mnt base base-devel plasma-meta kde-applications-meta intel-ucode grub efibootmgr gvim bbswitch pulseaudio-bluetooth git openssh zsh noto-fonts-cjk rsync gparted gst-libav telepathy-morse
+
+
+> 用以下命令生成fstab：
+> genfstab -U /mnt >> /mnt/etc/fstab
+> 检查fstab文件：
+> vim /mnt/etc/fstab
+
+
+
+> 用以下命令切换到新系统：
+> arch-chroot /mnt
+
+
+
+> 用以下命令设置root用户默认shell：
+> chsh -s /bin/zsh
+
+
+创建swapfile（需要root权限）：
+> ./cswapfile.sh
+dd if=/dev/zero of=/swapfile bs=1M count=16384 status=progress
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+编辑/etc/fstab，加入以下内容：
+/swapfile none swap defaults 0 0
+> 可以用free -h或swapon —show来查看swap状态。
+
+
+
+配置hibernation（需要root权限）：
+> ./cfghib.sh /dev/sda1（root所在分区）
+用以下命令获取swap的offset：
+filefrag -v /swapfile | awk '{ if($1=="0:"){print $4} }'
+用以下命令获取各分区的uuid：
+blkid
+vim /etc/default/grub
+修改GRUB_CMDLINE_LINUX=“resume=UUID=root分区的uuid resume_offset=swap的offset”
+
+
+
+> 编辑/etc/mkinitcpio.conf：
+> vim /etc/mkinitcpio.conf
+> 修改HOOKS=后的内容，把udev改成systemd。
+
+
+
+用以下命令设置sddm开机启动：
+> ./systemd-on.sh
+systemctl enable sddm
+
+设置蓝牙服务开机启动：
+systemctl enable bluetooth
+
+设置network-manager开机启动：
+systemctl enable NetworkManager
+
+
+# 此步骤省略，直接在kde开始菜单中输入sddm可以打开gui配置窗口。
+# 生成sddm配置文件：
+# mkdir /etc/sddm.conf.d
+# sddm --example-config > /etc/sddm.conf.d/sddm.conf
+
+
+# 配置sddm：
+# 编辑/etc/sddm.conf.d/sddm.conf的[Theme]部分，设置如下：
+# Current=breeze
+# CursorTheme=breeze_cursors
+
+
+> 用以下命令设置时区：
+> ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+> hwclock --systohc
+
+
+
+本地化：
+> ./cfgloc.sh
+编辑locale.gen文件：
+vim /etc/locale.gen
+取消注释以下行：
+en_US.UTF-8 UTF-8
+zh_CN.UTF-8 UTF-8
+zh_TW.UTF-8 UTF-8
+ja_JP.UTF-8 UTF-8
+运行以下命令完成设置：
+locale-gen
+
+设置语言：
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+> ./set-host.sh
+设置hostname：
+echo Arch > /etc/hostname
+
+设置hosts：
+vim /etc/hosts
+输入以下内容：
+127.0.0.1	localhost
+::1		localhost
+127.0.1.1	Arch.localdomain	Arch
+
+
+> 用以下命令设置root密码：
+> passwd
+
+
+
+> 用以下命令添加用户组：
+> groupadd sudo
+
+
+
+> 设置sudo用户组权限：
+> visudo
+> 取消注释有%sudo的一行
+
+
+> 用以下命令添加用户：
+> useradd -m -G sudo -s /bin/zsh me
+
+> 给新用户设置密码：
+> passwd me
+
+
+
+禁用独立显卡：
+> ./cfgbbswitch.sh
+echo bbswitch > /etc/modules-load.d/bbswitch.conf
+vim /etc/modprobe.d/blacklist.conf
+输入以下内容：
+blacklist nouveau
+保存。
+vim /etc/modprobe.d/bbswitch.conf
+输入以下内容：
+options bbswitch load_state=0 unload_state=1
+保存。
+
+
+> 生成镜像：
+> mkinitcpio -p linux
+
+
+安装bootloader（GRUB）：
+> ./cfggrub.sh
+运行以下命令安装GRUB到ESP：
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+运行以下命令生成配置文件：
+grub-mkconfig -o /boot/grub/grub.cfg
+
+
+
+> 用以下命令退出chroot环境：
+> exit
+
+
+
+> 卸载所有已经挂载的分区：
+> umount -R /mnt
+
+
+
+> 重启系统：
+> reboot
+
+
+
+检查独立显卡是否成功禁用：
+> lspci 对应项后应该为ff
+或
+sudo cat /proc/acpi/bbswitch
+应该为OFF。
+
+
+
+——以下为安装后的参考——
+
+
+
+配置输入法：
+> ./cfgim.sh
+sudo pacman -S fcitx-im fcitx-mozc fcitx-rime kcm-fcitx
+su - me
+vim .xprofile
+输入以下内容并保存：
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+> 重新登录。
+
+配置rime：
+从http://flypy.ys168.com/下载小鹤方案，解压
+将rime-data文件夹中flypy*开头的文件全部copy到~/.config/fcitx/rime目录中
+将rime-data/build文件夹中的全部文件copy到~/.config/fcitx/rime/build目录中
+在~/.config/fcitx/rime/build/default.yaml中加入flypy和flypyplus两个方案，用#注释掉其他方案。
+重新部署。
+
+
+
+创建swapfile（需要root权限）：
+
+dd if=/dev/zero of=/swapfile bs=1M count=16384 status=progress
+
+chmod 600 /swapfile
+
+mkswap /swapfile
+
+swapon /swapfile
+
+编辑/etc/fstab，加入以下内容：
+
+/swapfile none swap defaults 0 0
+
+重启。
+
+可以用free -h或swapon —show来查看swap状态。
+
+
+
+压缩分区（在live disk环境中）：
+
+e2fsck -f /dev/nvme0n1px（目标分区）
+
+resize2fs /dev/nvme0n1px 100G（目标大小）
+
+fdisk /dev/nvme0n1（目标分区所在磁盘）
+
+删除原来的分区
+
+创建新的分区：要求起始点跟原来一样，大小设置成resize2fs时的大小，不能删除签名。
+
+写入分区表，重启。
+
+
+
+扩展分区：
+
+安装gparted，在gui中操作。
+
+（安装前需要pacman -Syu）
+
+
+
+TODO：
+
+安装oh-my-zsh并完成基本配置
+
+# 安装grub主题
+
+研究备份方法
+
+
+
+安装virtual box虚拟机：
+
+sudo pacman -S virtualbox
+
+选择arch结尾的那个
+
+sudo gpasswd -a me vboxusers
+
+sudo reboot
+
+安装extension pack（在www.virtualbox.org下载）
+
+
+
+Powerline console字体：
+
+https://github.com/powerline/fonts/tree/master/Terminus/PSF
+
+
+
+设置tty字体：
+
+sudo vim /etc/vconsole.conf
+
+加入以下内容：
+
+FONT=字体名称（位于/usr/share/kbd/consolefonts，不带扩展名）
+
+
+
+安装AUR包：
+
+git clone
+
+makepkg -si
+
+
+
+备份文件夹：
+
+sudo rsync -a —delete —quiet —exclude=/path /from/path /to/path
+
+
+
+全系统备份：
+
+rsync -aAXHv —delete --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} / /path/to/backup/folder
+
+恢复：
+
+用live disk启动，mount目标root目录到/mnt，mount备份目录到/root/mnt
+
+rsync -aAXHv —exclude={看情况} /root/mnt /mnt
+
+修改/mnt/etc/fstab
+
+arch-chroot /mnt
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+
+
+好看的dock：
+
+安装latte-dock包
