@@ -28,7 +28,7 @@ sudo wipefs --all /dev/sda
 sudo mkfs.fat -F 32 /dev/sda
 
 
-插入U盘，重启电脑，按F12，从U盘启动
+> 插入U盘，重启电脑，按F12，从U盘启动
 
 
 
@@ -297,121 +297,112 @@ export XMODIFIERS=@im=fcitx
 
 
 创建swapfile（需要root权限）：
-
 dd if=/dev/zero of=/swapfile bs=1M count=16384 status=progress
-
 chmod 600 /swapfile
-
 mkswap /swapfile
-
 swapon /swapfile
-
 编辑/etc/fstab，加入以下内容：
-
 /swapfile none swap defaults 0 0
-
 重启。
-
 可以用free -h或swapon —show来查看swap状态。
 
 
 
 压缩分区（在live disk环境中）：
-
 e2fsck -f /dev/nvme0n1px（目标分区）
-
 resize2fs /dev/nvme0n1px 100G（目标大小）
-
 fdisk /dev/nvme0n1（目标分区所在磁盘）
-
 删除原来的分区
-
 创建新的分区：要求起始点跟原来一样，大小设置成resize2fs时的大小，不能删除签名。
-
 写入分区表，重启。
 
 
 
 扩展分区：
-
 安装gparted，在gui中操作。
-
 （安装前需要pacman -Syu）
 
 
 
 TODO：
-
 安装oh-my-zsh并完成基本配置
-
 # 安装grub主题
-
 研究备份方法
 
 
 
 安装virtual box虚拟机：
-
 sudo pacman -S virtualbox
-
 选择arch结尾的那个
-
 sudo gpasswd -a me vboxusers
-
 sudo reboot
-
 安装extension pack（在www.virtualbox.org下载）
 
 
 
 Powerline console字体：
-
 https://github.com/powerline/fonts/tree/master/Terminus/PSF
 
 
 
 设置tty字体：
-
 sudo vim /etc/vconsole.conf
-
 加入以下内容：
-
 FONT=字体名称（位于/usr/share/kbd/consolefonts，不带扩展名）
 
 
 
 安装AUR包：
-
 git clone
-
 makepkg -si
 
 
 
 备份文件夹：
-
 sudo rsync -a —delete —quiet —exclude=/path /from/path /to/path
 
 
 
 全系统备份：
-
 rsync -aAXHv —delete --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} / /path/to/backup/folder
 
 恢复：
-
 用live disk启动，mount目标root目录到/mnt，mount备份目录到/root/mnt
-
 rsync -aAXHv —exclude={看情况} /root/mnt /mnt
-
 修改/mnt/etc/fstab
-
 arch-chroot /mnt
-
 grub-mkconfig -o /boot/grub/grub.cfg
 
 
 
 好看的dock：
-
 安装latte-dock包
+
+
+使用hp-deskjet_1510打印机：
+安装hplip和cups两个包，
+sudo systemctl enable org.cups.cupsd.service
+重新启动，用hp-setup命令打开GUI设置页面。
+
+
+管理AUR：
+首先pacman -S go
+mkdir -p ~/go/src
+从aur手动安装yay，用yay package_name安装aur软件包，用yay -R package_name卸载，用yay更新。
+yay google-chrome
+yay visual-studio-code-bin
+
+
+
+
+~/.config/aria2/aria2.conf
+continue
+dir=${HOME}/Downloads
+file-allocation=falloc
+log-level=warn
+max-connection-per-server=16
+min-split-size=5M
+allow-overwrite=true
+split=16
+disk-cache=64M
+
