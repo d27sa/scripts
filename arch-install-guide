@@ -332,11 +332,12 @@ TODO：
 
 
 安装virtual box虚拟机：
-sudo pacman -S virtualbox
-选择arch结尾的那个
-sudo gpasswd -a me vboxusers
-sudo reboot
-安装extension pack（在www.virtualbox.org下载）
+# sudo pacman -S virtualbox
+# 选择arch结尾的那个
+# sudo gpasswd -a me vboxusers
+# sudo reboot
+# 安装extension pack（在www.virtualbox.org下载）
+yay virtualbox-bin
 
 
 
@@ -405,4 +406,20 @@ min-split-size=5M
 allow-overwrite=true
 split=16
 disk-cache=64M
+
+
+安装和配置postgresql：
+sudo pacman -S postgresql
+# 查看postgresql.service的内容来决定root文件夹放在哪，以下是例子：
+sudo mkdir /var/lib/postgres
+sudo chown postgres /var/lib/postgres
+sudo chgrp postgres /var/lib/postgres
+sudo -u postgres initdb -D /var/lib/postgres/data
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+
+使用postgresql：
+使用以下命令在后台启动数据库服务：
+sudo -u postgres pg_ctl start -D /var/lib/postgres/data -l /var/lib/postgres/data/pg_server.log
+
 
