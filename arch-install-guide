@@ -276,6 +276,21 @@ sudo cat /proc/acpi/bbswitch
 
 
 
+
+安装AUR包：
+git clone
+makepkg -si
+
+
+管理AUR：
+首先pacman -S go
+mkdir -p ~/go/src
+从aur手动安装yay-bin，用yay package_name安装aur软件包，用yay -R package_name卸载，用yay更新。
+yay google-chrome
+yay visual-studio-code-bin
+
+
+
 配置输入法：
 > ./cfgim.sh
 sudo pacman -S fcitx-im fcitx-mozc fcitx-rime kcm-fcitx
@@ -331,13 +346,6 @@ TODO：
 
 
 
-安装virtual box虚拟机：
-# sudo pacman -S virtualbox
-# 选择arch结尾的那个
-# sudo gpasswd -a me vboxusers
-# sudo reboot
-# 安装extension pack（在www.virtualbox.org下载）
-yay virtualbox-bin
 
 
 
@@ -353,9 +361,18 @@ FONT=字体名称（位于/usr/share/kbd/consolefonts，不带扩展名）
 
 
 
-安装AUR包：
-git clone
-makepkg -si
+
+
+
+安装virtual box虚拟机：
+sudo pacman -S virtualbox virtualbox-guest-iso
+选择arch结尾的那个
+sudo gpasswd -a me vboxusers
+yay virtualbox-ext-oracle
+sudo reboot
+# 安装extension pack（在www.virtualbox.org下载）
+
+
 
 
 
@@ -386,12 +403,7 @@ sudo systemctl enable org.cups.cupsd.service
 重新启动，用hp-setup命令打开GUI设置页面。
 
 
-管理AUR：
-首先pacman -S go
-mkdir -p ~/go/src
-从aur手动安装yay，用yay package_name安装aur软件包，用yay -R package_name卸载，用yay更新。
-yay google-chrome
-yay visual-studio-code-bin
+
 
 
 
