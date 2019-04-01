@@ -1,4 +1,4 @@
-Archlinux Installation Guide on Dell  XPS 15 9550
+Archlinux Installation Guide on Dell XPS 15 9550
 ===
 
 Pre-installation Preparations
@@ -155,4 +155,145 @@ All the steps can be substitute by the script:
 ### Change boot mode
 
 Edit `/etc/mkinitcpio.conf` and change `udev` in the "HOOKS=..." line to `systemd`.
+
+### Enable systemd services
+
+	systemctl enable sddm
+	systemctl enable bluetooth
+	systemctl enable NetworkManager
+
+All the steps can be replaced with `scripts/systemd-on.sh`.
+
+### Set time zone
+
+	ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+	hwclock --systohc
+
+### Localization
+
+Edit `/etc/locale.gen`, uncomment the following lines:
+
+	en_US.UTF-8 UTF-8
+	zh_CN.UTF-8 UTF-8
+	zh_TW.UTF-8 UTF-8
+	ja_JP.UTF-8 UTF-8
+
+Then run `locale-gen`.
+
+Set the `LANG` environment variable:
+
+	echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+All the steps can be replaced with `scripts/cfgloc.sh`.
+
+### Set hostname and hosts
+
+	echo Arch > /etc/hostname
+
+Edit `/etc/hosts`, add the following content:
+
+	127.0.0.1	localhost
+	::1		localhost
+	127.0.1.1	Arch.localdomain	Arch
+
+All the steps can be replaced with `scripts/set-host.sh`.
+
+### Set root password
+
+Use `passwd` command.
+
+### Create the sudo user group
+
+	groupadd sudo
+
+Run `visudo`, uncomment the line starts with `%sudo`.
+
+### Add a new user
+
+	useradd -m -G sudo -s /bin/zsh me
+
+Set password for the new user with `passwd me`.
+
+### Disable the descrete display card
+
+	echo bbswitch > /etc/modules-load.d/bbswitch.conf
+	echo 'blacklist nouveau' > /etc/modprobe.d/blacklist.conf
+	echo 'options bbswitch load_state=0 unload_state=1' > /etc/modprobe.d/bbswitch.conf
+
+Or use `scripts/cfgbbswitch.sh`.
+
+Check if the descrete display card is successfully disabled after reboot. `lspci` shoud show "ff" and the content of `/proc/acpi/bbswitch` should be "off".
+
+### Generate the initramfs image
+
+	mkinitcpio -p linux
+
+### Install GRUB
+
+	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+	grub-mkconfig -o /boot/grub/grub.cfg
+
+Or use `scripts/cfggrub.sh`.
+
+### Exit the chroot environment
+
+	exit
+
+### Unmount all partitions
+
+	umount -R /mnt
+
+### Reboot the system
+
+	reboot
+
+
+Post-installation Recommendations
+---
+
+### Install and configure the input method
+
+Install necessary packages:
+
+	sudo pacman -S fcitx-im fcitx-mozc fcitx-rime kcm-fcitx
+
+Edit `~/.xprofile`, add the following content:
+
+	export GTK_IM_MODULE=fcitx
+	export QT_IM_MODULE=fcitx
+	export XMODIFIERS=@im=fcitx
+
+Or use `scripts/cfgim.sh`.
+
+Log out and log in again.
+
+Download the XHUP schema [here](http://flypy.ys168.com/) and extract it. Copy all files starts with "flypy" in the `rime-data` directory to `~/.config/fcitx/rime/`. Copy all files in `rime-data/build` to `~/.config/fcitx/rime/build/`.  
+Edit `~/.config/fcitx/rime/build/default.yaml`, add `flypy` and `flypyplus` to schema list and comment others.  
+Re-deploy rime.
+
+### Install the AUR helper yay
+
+	git clone https://aur.archlinux.org/yay-bin.git
+	cd yay-bin && makepkg -si
+
+### Install useful AUR packages
+
+	yay google-chrome
+	yay visual-studio-code-bin
+
+### Install virtualbox
+
+	sudo pacman -S virtualbox virtualbox-guest-iso # Choose 2 (the one ends with "arch")
+	sudo gpasswd -a me vboxusers
+	yay virtualbox-ext-oracle
+	sudo reboot
+
+### Install and configure postgresql
+
+	sudo pacman -S postgresql
+	sudo mkdir /var/lib/postgres
+	sudo chown postgres:postgres /var/lib/postgres
+	sudo -u postgres initdb -D /var/lib/postgres/data
+	sudo systemctl enable postgresql
+	sudo systemctl start postgresql
 
