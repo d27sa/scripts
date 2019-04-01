@@ -106,7 +106,7 @@ Here are some good mirrors in Japan:
 
 ### Install packages to your new system
 
-	pacstrap /mnt base base-devel plasma-meta kde-applications-meta intel-ucode grub efibootmgr gvim bbswitch pulseaudio-bluetooth git openssh zsh noto-fonts-cjk rsync gparted gst-libav latte-dock telepathy-morse aria2 go
+	pacstrap /mnt base base-devel plasma-meta kde-applications-meta intel-ucode grub efibootmgr gvim bbswitch pulseaudio-bluetooth git openssh zsh noto-fonts-cjk rsync gparted gst-libav latte-dock telepathy-morse aria2 go dnsmasq nmap
 
 Or use the script `scripts/pkg-install.sh`.
 
