@@ -10,4 +10,4 @@ Set the wired connection IPv4 setting to "Shared to other computers". Find the i
 
 Use `nmap 10.42.0.1/24` to find the ip address of the raspberrypi (assume it's `10.42.0.52`).
 
-SSH to the raspberrypi with `ssh pi@10.42.0.52 -p 22`.
+SSH to the raspberrypi with `ssh pi@10.42.0.52`.

@@ -101,12 +101,14 @@ Create the `/mnt/boot` directory and mount the ESP partition:
 Edit the file `/etc/pacman.d/mirrorlist` and move preferred mirrors to the top of the file.  
 Here are some good mirrors in Japan:
 
-- <http://ftp.tsukuba.wide.ad.jp/Linux/archlinux/>
-- <https://jpn.mirror.pkgbuild.com/>
+- Server = http://ftp.tsukuba.wide.ad.jp/Linux/archlinux/$repo/os/$arch
+- Server = https://jpn.mirror.pkgbuild.com/$repo/os/$arch
+
+Use `scripts/set-mirror.sh`.
 
 ### Install packages to your new system
 
-	pacstrap /mnt base base-devel plasma-meta kde-applications-meta intel-ucode grub efibootmgr gvim bbswitch pulseaudio-bluetooth git openssh zsh noto-fonts-cjk rsync gparted gst-libav latte-dock telepathy-morse aria2 go dnsmasq nmap
+	pacstrap /mnt base base-devel plasma-meta kde-applications-meta intel-ucode grub efibootmgr gvim bbswitch pulseaudio-bluetooth git openssh zsh noto-fonts-cjk rsync gparted gst-libav latte-dock telepathy-morse aria2 go dnsmasq nmap nodejs
 
 Or use the script `scripts/pkg-install.sh`.
 
