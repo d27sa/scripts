@@ -1,6 +1,47 @@
 Archlinux Installation Guide on Dell XPS 15 9550
 ===
 
+- [Archlinux Installation Guide on Dell XPS 15 9550](#archlinux-installation-guide-on-dell-xps-15-9550)
+	- [Pre-installation Preparations](#pre-installation-preparations)
+		- [Change BIOS Settings](#change-bios-settings)
+		- [Download and Verify the ISO file](#download-and-verify-the-iso-file)
+		- [Write the ISO file to a USB stick](#write-the-iso-file-to-a-usb-stick)
+	- [Install the Archlinux System](#install-the-archlinux-system)
+		- [Boot into live disk environment](#boot-into-live-disk-environment)
+		- [Verify the boot mode](#verify-the-boot-mode)
+		- [Connect to the Internet](#connect-to-the-internet)
+		- [Update the system clock](#update-the-system-clock)
+		- [Disk Partition](#disk-partition)
+		- [Format the partitions](#format-the-partitions)
+		- [Mount the partitions](#mount-the-partitions)
+		- [Choose Mirrors](#choose-mirrors)
+		- [Install packages to your new system](#install-packages-to-your-new-system)
+		- [Generate the fstab](#generate-the-fstab)
+		- [Change root to the new system](#change-root-to-the-new-system)
+		- [Set the default shell of root to zsh](#set-the-default-shell-of-root-to-zsh)
+		- [Create the swap file](#create-the-swap-file)
+		- [Configure hibernation](#configure-hibernation)
+		- [Change boot mode](#change-boot-mode)
+		- [Enable systemd services](#enable-systemd-services)
+		- [Set time zone](#set-time-zone)
+		- [Localization](#localization)
+		- [Set hostname and hosts](#set-hostname-and-hosts)
+		- [Set root password](#set-root-password)
+		- [Create the sudo user group](#create-the-sudo-user-group)
+		- [Add a new user](#add-a-new-user)
+		- [Disable the descrete display card](#disable-the-descrete-display-card)
+		- [Generate the initramfs image](#generate-the-initramfs-image)
+		- [Install GRUB](#install-grub)
+		- [Exit the chroot environment](#exit-the-chroot-environment)
+		- [Unmount all partitions](#unmount-all-partitions)
+		- [Reboot the system](#reboot-the-system)
+	- [Post-installation Recommendations](#post-installation-recommendations)
+		- [Install and configure the input method](#install-and-configure-the-input-method)
+		- [Install the AUR helper yay](#install-the-aur-helper-yay)
+		- [Install useful AUR packages](#install-useful-aur-packages)
+		- [Install virtualbox](#install-virtualbox)
+		- [Install and configure postgresql](#install-and-configure-postgresql)
+
 Pre-installation Preparations
 ---
 
@@ -101,8 +142,8 @@ Create the `/mnt/boot` directory and mount the ESP partition:
 Edit the file `/etc/pacman.d/mirrorlist` and move preferred mirrors to the top of the file.  
 Here are some good mirrors in Japan:
 
-- Server = http://ftp.tsukuba.wide.ad.jp/Linux/archlinux/$repo/os/$arch
-- Server = https://jpn.mirror.pkgbuild.com/$repo/os/$arch
+- Server = http://ftp.tsukuba.wide.ad.jp/Linux/archlinux/\$repo/os/\$arch
+- Server = https://jpn.mirror.pkgbuild.com/\$repo/os/\$arch
 
 Use `scripts/set-mirror.sh`.
 
